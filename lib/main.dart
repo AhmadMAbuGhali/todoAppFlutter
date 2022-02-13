@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:todo/services/notification_services.dart';
 import 'package:todo/services/theme_services.dart';
 import 'package:todo/ui/pages/notification_screen.dart';
 import 'package:todo/ui/theme.dart';
 
 import 'ui/pages/home_page.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+//NotifyHelper().initializeNotification();
 }
 
 class MyApp extends StatelessWidget {
