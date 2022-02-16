@@ -12,6 +12,7 @@ import 'ui/pages/home_page.dart';
 Future <void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+
  await DBHelper.initDb();
   await GetStorage.init();
   runApp(const MyApp());

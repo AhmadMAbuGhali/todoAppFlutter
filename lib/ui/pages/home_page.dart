@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:todo/controllers/task_controller.dart';
+import 'package:todo/db/db_helper.dart';
 import 'package:todo/models/task.dart';
 import 'package:todo/services/notification_services.dart';
 import 'package:todo/services/theme_services.dart';
@@ -32,6 +33,7 @@ class _HomePageState extends State<HomePage> {
     notifyHelper = NotifyHelper();
     notifyHelper.requestIOSPermissions();
     notifyHelper.initializeNotification();
+    _taskController.getTask();
   }
 
   DateTime _selecteddate = DateTime.now();
@@ -72,7 +74,18 @@ class _HomePageState extends State<HomePage> {
       ),
       elevation: 0,
       backgroundColor: context.theme.backgroundColor,
-      actions: const [
+      actions:  [
+        IconButton(
+          onPressed: () {
+            notifyHelper.cancelAllNotification();
+            _taskController.deleteAllTask();
+
+          },
+          icon: Icon(Icons.cleaning_services_outlined,
+            size: 24,
+            color: Get.isDarkMode ? Colors.white : darkGreyClr,),
+         
+        ),
         CircleAvatar(
           backgroundImage: AssetImage('images/person.jpeg'),
           radius: 20,
@@ -98,7 +111,7 @@ class _HomePageState extends State<HomePage> {
                 style: subHeadingStyle,
               ),
               Text(
-                'Todat',
+                'Today',
                 style: headingStyle,
               )
             ],
@@ -171,7 +184,10 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (BuildContext context, int index) {
                 var task = _taskController.taskList[index];
                 if (task.repeat == 'Daily' ||
-                    task.date == DateFormat.yMd().format(_selecteddate)) {
+                    task.date == DateFormat.yMd().format(_selecteddate)
+                || (task.repeat == 'Weekly'&& _selecteddate.difference(DateFormat.yMd().parse(task.date!)).inDays %7 ==0)
+                ||(task.repeat == 'Monthly'&& DateFormat.yMd().parse(task.date!).day == _selecteddate.day)
+                ) {
                   var hour = task.startTime.toString().split(':')[0];
                   var minutes = task.startTime.toString().split(':')[1];
 
@@ -209,17 +225,7 @@ class _HomePageState extends State<HomePage> {
       }),
     );
 
-    // Obx(() {
-    //   //_taskController.taskList.isEmpty
-    //   if (true){
-    //       return _noTaskMsg();
-    //   }else{
-    //    return Container(
-    //       height: 0,
-    //     );
-    //   }
-    //
-    // })
+
   }
 
   _noTaskMsg() {
@@ -300,6 +306,7 @@ class _HomePageState extends State<HomePage> {
                 : _buildBottomSheet(
                     label: 'Task Completed',
                     onTap: () {
+                      notifyHelper.cancelNotification(task);
                       _taskController.markTaskCompleted(task.id!);
                       Get.back();
                     },
@@ -307,7 +314,7 @@ class _HomePageState extends State<HomePage> {
             _buildBottomSheet(
                 label: 'Delete Task ',
                 onTap: () {
-
+                 notifyHelper.cancelNotification(task);
                   _taskController.deleteTask(task);
                   Get.back();
                 },

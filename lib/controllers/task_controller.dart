@@ -27,4 +27,10 @@ taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
    await DBHelper.update(id);
    getTask();
   }
+
+  deleteAllTask() async{
+    await DBHelper.deleteAll();
+    getTask();
+
+  }
 }
