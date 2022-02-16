@@ -28,7 +28,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back_ios),
+          icon:  Icon(
+            Icons.arrow_back_ios,
+            color: Get.isDarkMode ? Colors.white : darkGreyClr,
+          ),
         ),
         elevation: 0,
         backgroundColor: context.theme.backgroundColor,
@@ -67,7 +70,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             const SizedBox(height: 10),
             Expanded(
                 child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 30,vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
               margin: const EdgeInsets.symmetric(horizontal: 30),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
@@ -96,9 +99,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Text(  _payload.toString().split('|')[0],
-                      style:const TextStyle(color: Colors.white,fontSize: 20),
-                      textAlign: TextAlign.justify,),
+                    Text(
+                      _payload.toString().split('|')[0],
+                      style: const TextStyle(color: Colors.white, fontSize: 20),
+                      textAlign: TextAlign.justify,
+                    ),
                     Row(
                       children: const [
                         Icon(
@@ -118,9 +123,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Text(  _payload.toString().split('|')[1],
+                    Text(
+                      _payload.toString().split('|')[1],
                       textAlign: TextAlign.justify,
-                      style: const TextStyle(color: Colors.white,fontSize: 20,),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     Row(
@@ -142,8 +151,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Text(  _payload.toString().split('|')[2],style:
-                    const TextStyle(color: Colors.white,fontSize: 20,),
+                    Text(
+                      _payload.toString().split('|')[2],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
                     ),
                   ],
                 ),

@@ -1,21 +1,30 @@
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:todo/db/db_helper.dart';
 import 'package:todo/models/task.dart';
 
-class TaskController   extends GetxController {
+class TaskController extends GetxController {
+  final RxList<Task> taskList = <Task>[].obs;
 
-  final taskList  = <Task>[
+Future<int>  addTask({ Task? task}) {
+    return DBHelper.insert(task!);
 
-    Task(            title: 'Title1',
-      note: 'Note Something',
-      isCompleted: 0,
-      startTime: DateFormat('hh:mm a').format(DateTime.now().add(const Duration(minutes: 1))),
-      color: 2,
-    ),
+  }
+ Future<void> getTask() async{
+  final List<Map<String,dynamic>> tasks =  await DBHelper.query();
 
-  ];
+taskList.assignAll(tasks.map((data) => Task.fromJson(data)).toList());
 
-  getTask(){
+  }
+  void deleteTask(Task task) async{
+  
 
+   await DBHelper.delete(task);
+   getTask();
+
+  }
+ void markTaskCompleted(int id) async{
+
+   await DBHelper.update(id);
+   getTask();
   }
 }

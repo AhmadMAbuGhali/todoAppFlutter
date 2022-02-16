@@ -9,10 +9,8 @@ import 'package:todo/controllers/task_controller.dart';
 import 'package:todo/models/task.dart';
 import 'package:todo/services/notification_services.dart';
 import 'package:todo/services/theme_services.dart';
-import 'package:todo/ui/pages/notification_screen.dart';
 import 'package:todo/ui/size_config.dart';
 import 'package:todo/ui/widgets/button.dart';
-import 'package:todo/ui/widgets/input_field.dart';
 import 'package:todo/ui/widgets/task_tile.dart';
 
 import '../theme.dart';
@@ -154,66 +152,63 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<void> _onRefresh() async {
+    return _taskController.getTask();
+  }
+
   _showTasks() {
     return Expanded(
-      child: ListView.builder(
-        scrollDirection: SizeConfig.orientation == Orientation.landscape
-            ? Axis.horizontal
-            : Axis.vertical,
-        itemBuilder: (BuildContext context, int index) {
-          var task = _taskController.taskList[index];
+      child: Obx(() {
+        if (_taskController.taskList.isEmpty) {
+          return _noTaskMsg();
+        } else {
+          return RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: ListView.builder(
+              scrollDirection: SizeConfig.orientation == Orientation.landscape
+                  ? Axis.horizontal
+                  : Axis.vertical,
+              itemBuilder: (BuildContext context, int index) {
+                var task = _taskController.taskList[index];
+                if (task.repeat == 'Daily' ||
+                    task.date == DateFormat.yMd().format(_selecteddate)) {
+                  var hour = task.startTime.toString().split(':')[0];
+                  var minutes = task.startTime.toString().split(':')[1];
 
-          var hour = task.startTime.toString().split(':')[0];
-          var minutes = task.startTime.toString().split(':')[1];
+                  var date = DateFormat.jm().parse(task.startTime!);
 
-          var date = DateFormat.jm().parse(task.startTime!);
+                  var myTime = DateFormat('HH:MM').format(date);
 
-          var myTime = DateFormat('HH:MM').format(date);
+                  notifyHelper.scheduledNotification(
+                    int.parse(myTime.toString().split(':')[0]),
+                    int.parse(myTime.toString().split(':')[1]),
+                    task,
+                  );
 
-          notifyHelper.scheduledNotification(
-           int.parse(myTime.toString().split(':')[0]),
-            int.parse(myTime.toString().split(':')[1]),
-            task,
-          );
-
-          return AnimationConfiguration.staggeredList(
-            position: index,
-            duration: const Duration(milliseconds: 1355),
-            child: SlideAnimation(
-              horizontalOffset: 300,
-              child: FadeInAnimation(
-                child: GestureDetector(
-                    onTap: () => showBottomSheet(context, task),
-                    child: TaskTile(task)),
-              ),
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 1355),
+                    child: SlideAnimation(
+                      horizontalOffset: 300,
+                      child: FadeInAnimation(
+                        child: GestureDetector(
+                            onTap: () => showBottomSheet(context, task),
+                            child: TaskTile(task)),
+                      ),
+                    ),
+                  );
+                }
+                else{
+                  return Container(height: 0,);
+                }
+              },
+              itemCount: _taskController.taskList.length,
             ),
           );
-        },
-        itemCount: _taskController.taskList.length,
-      ),
+        }
+      }),
     );
 
-    // return Expanded(
-    //     child: GestureDetector(
-    //       onTap: (){
-    //         showBottomSheet(context,Task(
-    //           title: 'Title1',
-    //           note: 'Note Something',
-    //           isCompleted: 0,
-    //           startTime: '20:18',
-    //           endTime: '20"35',
-    //           color: 1,
-    //         ));
-    //       },
-    //       child: TaskTile(Task(
-    //         title: 'Title1',
-    //         note: 'Note Something',
-    //         isCompleted: 0,
-    //         startTime: '20:18',
-    //         endTime: '20"35',
-    //         color: 1,
-    //       )),
-    //     ));
     // Obx(() {
     //   //_taskController.taskList.isEmpty
     //   if (true){
@@ -232,36 +227,39 @@ class _HomePageState extends State<HomePage> {
       children: [
         AnimatedPositioned(
           duration: const Duration(milliseconds: 2000),
-          child: SingleChildScrollView(
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              direction: SizeConfig.orientation == Orientation.landscape
-                  ? Axis.horizontal
-                  : Axis.vertical,
-              children: [
-                SizeConfig.orientation == Orientation.landscape
-                    ? const SizedBox(height: 6)
-                    : const SizedBox(height: 220),
-                SvgPicture.asset(
-                  'images/task.svg',
-                  height: 90,
-                  semanticsLabel: 'Task',
-                  color: primaryClr.withOpacity(0.5),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                  child: Text(
-                    'You do not have any tasks yet! \n Add new tasks to make your days productive',
-                    style: subTitleStyle,
-                    textAlign: TextAlign.center,
+          child: RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: SingleChildScrollView(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                direction: SizeConfig.orientation == Orientation.landscape
+                    ? Axis.horizontal
+                    : Axis.vertical,
+                children: [
+                  SizeConfig.orientation == Orientation.landscape
+                      ? const SizedBox(height: 6)
+                      : const SizedBox(height: 220),
+                  SvgPicture.asset(
+                    'images/task.svg',
+                    height: 90,
+                    semanticsLabel: 'Task',
+                    color: primaryClr.withOpacity(0.5),
                   ),
-                ),
-                SizeConfig.orientation == Orientation.landscape
-                    ? const SizedBox(height: 120)
-                    : const SizedBox(height: 180),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 10),
+                    child: Text(
+                      'You do not have any tasks yet! \n Add new tasks to make your days productive',
+                      style: subTitleStyle,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  SizeConfig.orientation == Orientation.landscape
+                      ? const SizedBox(height: 120)
+                      : const SizedBox(height: 180),
+                ],
+              ),
             ),
           ),
         )
@@ -302,15 +300,18 @@ class _HomePageState extends State<HomePage> {
                 : _buildBottomSheet(
                     label: 'Task Completed',
                     onTap: () {
+                      _taskController.markTaskCompleted(task.id!);
                       Get.back();
                     },
                     clr: primaryClr),
             _buildBottomSheet(
                 label: 'Delete Task ',
                 onTap: () {
+
+                  _taskController.deleteTask(task);
                   Get.back();
                 },
-                clr: primaryClr),
+                clr: Colors.red),
             Divider(color: Get.isDarkMode ? Colors.grey : darkGreyClr),
             _buildBottomSheet(
                 label: 'Cancel',

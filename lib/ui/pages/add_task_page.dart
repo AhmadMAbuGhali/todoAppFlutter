@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:todo/controllers/task_controller.dart';
+import 'package:todo/models/task.dart';
 import 'package:todo/ui/theme.dart';
 import 'package:todo/ui/widgets/button.dart';
 import 'package:todo/ui/widgets/input_field.dart';
@@ -19,10 +20,12 @@ class _AddTaskPageState extends State<AddTaskPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
 
+
   DateTime _selectedDate = DateTime.now();
   String _startTime = DateFormat('hh:mm a').format(DateTime.now()).toString();
   String _endTime = DateFormat('hh:mm a')
-      .format(DateTime.now().add(const Duration(minutes: 15))).toString();
+      .format(DateTime.now().add(const Duration(minutes: 15)))
+      .toString();
   int _selectedRemind = 5;
   List<int> remindList = [5, 10, 15, 20];
   String _selectedRepeat = 'None';
@@ -51,13 +54,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
               InputField(
                 title: 'Note',
                 hint: 'Enter Note here',
-                controller: _titleController,
+                controller: _noteController,
               ),
               InputField(
                 title: 'Date',
                 hint: DateFormat.yMd().format(_selectedDate),
                 widget: IconButton(
-                  onPressed: () {},
+                  onPressed: () => _getDateFromUser(),
                   icon: const Icon(
                     Icons.calendar_today_outlined,
                     color: Colors.grey,
@@ -71,7 +74,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       title: 'Start Time',
                       hint: _startTime,
                       widget: IconButton(
-                        onPressed: () {},
+                        onPressed: () => _getTimeFromUser(isStartTime: true),
                         icon: const Icon(
                           Icons.access_time_rounded,
                           color: Colors.grey,
@@ -87,7 +90,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       title: 'End Time',
                       hint: _endTime,
                       widget: IconButton(
-                        onPressed: () {},
+                        onPressed: () => _getTimeFromUser(isStartTime: false),
                         icon: const Icon(
                           Icons.access_time_rounded,
                           color: Colors.grey,
@@ -188,7 +191,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                   MyButton(
                       label: 'Create Task',
                       onTap: () {
-                        Get.back();
+                        _validateDate();
                       })
                 ],
               )
@@ -201,6 +204,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   Column _colorPalette() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Color',
@@ -222,7 +226,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 padding: const EdgeInsets.only(right: 8.0),
                 child: CircleAvatar(
                   child: _selectedColor == index
-                      ? Icon(
+                      ? const Icon(
                           Icons.done,
                           size: 16,
                           color: Colors.white,
@@ -243,6 +247,41 @@ class _AddTaskPageState extends State<AddTaskPage> {
     );
   }
 
+  _validateDate() {
+    if (_titleController.text.isNotEmpty && _noteController.text.isNotEmpty) {
+      _addTasksToDb();
+      Get.back();
+    } else if (_titleController.text.isEmpty || _noteController.text.isEmpty) {
+      Get.snackbar('Required', 'All field are Required',
+          snackPosition: SnackPosition.BOTTOM,
+          colorText: pinkClr,
+          backgroundColor: Colors.white,
+          icon: const Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.red,
+          ));
+    } else {
+      print('Something bad');
+    }
+  }
+
+  _addTasksToDb() async {
+    int value = await _taskController.addTask(
+      task:  Task(
+          title: _titleController.text,
+          note: _noteController.text,
+          isCompleted: 0,
+          date: DateFormat.yMd().format(_selectedDate),
+          startTime: _startTime,
+          endTime: _endTime,
+          color: _selectedColor,
+          repeat: _selectedRepeat,
+          remind: _selectedRemind),
+    );
+
+    print('value =  $value');
+  }
+
   AppBar _appBar() {
     return AppBar(
       leading: IconButton(
@@ -255,13 +294,49 @@ class _AddTaskPageState extends State<AddTaskPage> {
       ),
       elevation: 0,
       backgroundColor: context.theme.backgroundColor,
-actions: const [
+      actions: const [
         CircleAvatar(
-           backgroundImage: AssetImage('images/person.jpeg'),
+          backgroundImage: AssetImage('images/person.jpeg'),
           radius: 20,
         ),
-  SizedBox(width: 20,)
-],
+        SizedBox(
+          width: 20,
+        )
+      ],
     );
+  }
+
+  _getDateFromUser() async {
+    DateTime? _pickedDate = await showDatePicker(
+        context: context,
+        initialDate: _selectedDate,
+        firstDate: DateTime(2015),
+        lastDate: DateTime(2030));
+
+    if (_pickedDate != null) {
+      setState(() {
+        _selectedDate = _pickedDate;
+      });
+    } else {
+      print('');
+    }
+  }
+
+  _getTimeFromUser({required bool isStartTime}) async {
+    TimeOfDay? _pickedTime = await showTimePicker(
+      context: context,
+      initialTime: isStartTime
+          ? TimeOfDay.fromDateTime(DateTime.now())
+          : TimeOfDay.fromDateTime(
+              DateTime.now().add(const Duration(minutes: 15))),
+    );
+    String _formattedTime = _pickedTime!.format(context) ;
+    if(isStartTime)
+      setState(() => _startTime =_formattedTime);
+   else if(!isStartTime)
+      setState(() => _endTime =_formattedTime);
+
+
+
   }
 }
