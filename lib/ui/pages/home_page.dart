@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> {
         DateTime.now(),
         initialSelectedDate: DateTime.now(),
         width: 65,
-        height: 100,
+        height: 120,
         selectedTextColor: Colors.white,
         selectionColor: primaryClr,
         dateTextStyle: GoogleFonts.lato(
@@ -255,10 +255,12 @@ class _HomePageState extends State<HomePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 30, vertical: 10),
-                    child: Text(
-                      'You do not have any tasks yet! \n Add new tasks to make your days productive',
-                      style: subTitleStyle,
-                      textAlign: TextAlign.center,
+                    child: Center(
+                      child: Text(
+                        'You do not have any tasks yet! \n Add new tasks to make your \n days productive',
+                        style: subTitleStyle,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                   SizeConfig.orientation == Orientation.landscape
